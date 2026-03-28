@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+dist/
+build/
+coverage/
+logs/
+*.log
+
+# Blockchain-specific (optional)
+backend/blockchain/node_modules/
+backend/blockchain/artifacts/
+backend/blockchain/cache/
+backend/blockchain/typechain/
+backend/blockchain/.env

@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+enum UserRole {
+  GOVERNMENT
+  CONTRACTOR
+  SUPREME_ADMIN
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum MilestoneStatus {
+  PENDING
+  SUBMITTED
+  VERIFIED
+  REJECTED
+  PAID
+}
+
+enum DocumentType {
+  INVOICE
+  BILL
+  PROOF
+  OTHER
+}
+
+enum VerificationStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum TransactionStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+}
+
+enum SiteInspectionStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+//////////////////////////////////////////////////////
+// USER MODEL
+//////////////////////////////////////////////////////
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password      String
+  phone         String?
+  role          UserRole
+  cppUserId     String?  @unique
+
+  approved      Boolean  @default(false) // Added for Supreme Admin approval
+  otp           String?                     // Added for forgot password
+  otpExpiry     DateTime?                  // Optional OTP expiration
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  projectsOwned Project[] @relation("GovernmentProjects")
+  auditLogs     AuditLog[]
+  bankAccount   BankAccount?
+  notifications Notification[]
+}
+
+//////////////////////////////////////////////////////
+// BANK ACCOUNT MODEL
+//////////////////////////////////////////////////////
+
+model BankAccount {
+  id          String   @id @default(uuid())
+  accountNo   String   @unique
+  holderName  String
+  balance     Float
+  type        String   // GOV or CONTRACTOR
+
+  userId      String?  @unique
+  user        User?    @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// PROJECT MODEL
+//////////////////////////////////////////////////////
+
+model Project {
+  id                String   @id @default(uuid())
+  name              String
+  description       String
+  locationState     String
+  locationCity      String
+  budget            Float
+  status            ProjectStatus @default(ACTIVE)
+
+  governmentId      String
+  contractorCppId   String
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  government        User @relation("GovernmentProjects", fields: [governmentId], references: [id])
+  milestones        Milestone[]
+  complaints        Complaint[]
+
+  @@index([locationState, locationCity])
+}
+
+//////////////////////////////////////////////////////
+// MILESTONE MODEL
+//////////////////////////////////////////////////////
+
+model Milestone {
+  id                String   @id @default(uuid())
+  title             String
+  description       String
+  amount            Float
+  status            MilestoneStatus @default(PENDING)
+  sequence          Int
+
+  projectId         String
+  verifiedBy        String?
+
+  milestoneHash     String?   @unique
+  siteInspection    SiteInspectionStatus @default(PENDING)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  project           Project @relation(fields: [projectId], references: [id])
+  documents         Document[]
+  transaction       Transaction?
+
+  @@unique([projectId, sequence])
+}
+
+//////////////////////////////////////////////////////
+// DOCUMENT MODEL (LOCAL STORAGE)
+//////////////////////////////////////////////////////
+
+model Document {
+  id                String   @id @default(uuid())
+  fileName          String
+  fileUrl           String
+  hash              String   @unique
+  type              DocumentType
+  isPublic          Boolean  @default(false)
+
+  milestoneId       String
+  uploadedBy        String
+
+  verification      VerificationStatus @default(PENDING)
+  rejectionReason   String?
+  previousDocumentId String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  milestone         Milestone @relation(fields: [milestoneId], references: [id])
+
+  @@index([milestoneId])
+}
+
+//////////////////////////////////////////////////////
+// TRANSACTION MODEL (BANK SYSTEM)
+//////////////////////////////////////////////////////
+
+model Transaction {
+  id                String   @id @default(uuid())
+  milestoneId       String   @unique
+  amount            Float
+  fromAccount       String
+  toAccount         String
+
+  transactionHash   String   @unique
+  bankTransactionId String   @unique
+
+  status            TransactionStatus
+  timestamp         DateTime
+  createdAt         DateTime @default(now())
+
+  // Relation
+  milestone         Milestone @relation(fields: [milestoneId], references: [id])
+}
+
+//////////////////////////////////////////////////////
+// NOTIFICATION MODEL (NEW)
+//////////////////////////////////////////////////////
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  message     String
+  isRead      Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+
+  // Relation
+  user        User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+//////////////////////////////////////////////////////
+// COMPLAINT MODEL
+//////////////////////////////////////////////////////
+
+model Complaint {
+  id          String   @id @default(uuid())
+  message     String
+  status      String   @default("OPEN")
+  submittedBy String?
+  projectId   String
+
+  createdAt   DateTime @default(now())
+
+  // Relation
+  project     Project @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
+}
+
+//////////////////////////////////////////////////////
+// AUDIT LOG
+//////////////////////////////////////////////////////
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  userId      String
+  entity      String
+  entityId    String
+  metadata    Json?
+
+  createdAt   DateTime @default(now())
+
+  // Relation
+  user        User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}

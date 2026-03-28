@@ -1,0 +1,108 @@
+contractor
+
+{
+  "name": "Vikas Sharma",
+  "email": "vikas@example.com",
+  "phone": "9876543210",
+  "password": "123456",
+  "cppUserId": "CPP12345"
+  "userId": "id":"d8a1d939-db19-4d2c-8583-2e66cc43f28e"
+}
+
+{"msg":"Bank account created successfully",
+  account":
+     {"id":"7fa5805c-1853-4c92-abd8-394adb84ed65",
+     "accountNo":"1234567890",
+     "holderName":"Vikas Sharma",
+     "balance":10000,
+     "type":"CONTRACTOR",
+     "userId":"d8a1d939-db19-4d2c-8583-2e66cc43f28e",
+     "createdAt":"2026-03-28T09:08:06.971Z",
+     "updatedAt":"2026-03-28T09:08:06.971Z"}
+  }
+{
+  "name": "Ram Sharma",
+  "email": "ram@example.com",
+  "phone": "9876543210",
+  "password": "123456",
+  "cppUserId": "CPP123456"
+  "userId": "e9732982-4c55-4b7d-b17a-b0a742477f5b"
+}
+
+{"msg":"Bank account created successfully",
+    "account":{"id":"cbfb14c3-c8dd-4365-a367-e3d99232b044",
+    "accountNo":"1234567892",
+    "holderName":"Ram Sharma",
+    "balance":0,
+    "type":"CONTRACTOR",
+    "userId":"e9732982-4c55-4b7d-b17a-b0a742477f5b",
+    "createdAt":"2026-03-28T10:19:44.675Z",
+    "updatedAt":"2026-03-28T10:19:44.675Z"}
+}
+
+projects
+
+[
+    {
+        "id": "aa47e8e2-41f2-4040-b7bf-bb5e828983b0",
+        "name": "Highway Construction",
+        "description": "Construction of national highway",
+        "locationState": "Haryana",
+        "locationCity": "Sonipat",
+        "budget": 5000000,
+        "status": "ACTIVE",
+        "governmentId": "db940363-55e3-40de-8ed6-8d30792b182a",
+        "contractorCppId": "CPP123456",
+        "createdAt": "2026-03-28T08:17:58.086Z",
+        "updatedAt": "2026-03-28T08:17:58.086Z"
+    }
+]
+
+{"msg":"Milestone created successfully",
+"milestone":
+    {"id":"0c3879ab-4e95-43ea-a2cc-9acbe014a0aa",
+    "title":"Foundation Work",
+    "description":"Initial foundation completion",
+    "amount":100000,
+    "status":"PENDING",
+    "sequence":1,
+    "projectId":"aa47e8e2-41f2-4040-b7bf-bb5e828983b0",
+    "verifiedBy":null,
+    "milestoneHash":null,
+    "siteInspection":"PENDING",
+    "createdAt":"2026-03-28T10:07:40.213Z",
+    "updatedAt":"2026-03-28T10:07:40.213Z"}
+}
+
+
+gov
+
+{
+  "name": "Gov Officer",
+  "email": "gov@example.com",
+  "phone": "9999999999",
+  "password": "Password@123"
+   "id": "db940363-55e3-40de-8ed6-8d30792b182a"
+}
+
+{
+  "userId": "db940363-55e3-40de-8ed6-8d30792b182a",
+  "accountNo": "1234567891",
+  "holderName": "Gov officer",
+  "balance": 1000000,
+  "type": "GOV"
+}
+
+supreme admin
+{
+  "name": "Supreme Admin",
+  "email": "pawan123@gmail.com",
+  "password": "123456",
+  "role": "SUPREME_ADMIN",
+  "approved": true,
+}  
+
+
+command for deployment of smart contractor
+
+npx hardhat ignition deploy ignition/modules/GovChainModule.js --network localhost
