@@ -26,6 +26,10 @@ export const publicService = {
 
     if (!project) throw new Error("Project not found");
 
+    const contractor = await prisma.user.findUnique({
+      where: { cppUserId: project.contractorCppId }
+    });
+
     const result = [];
 
     // 🔹 Process each milestone
@@ -105,17 +109,17 @@ export const publicService = {
 
         let docStatus = "NOT_STORED";
 
-        try {
-          const isValid = await blockchainService.verifyDocument(
-            milestone.id,
-            doc.hash
-          );
-
-          docStatus = isValid ? "VERIFIED" : "TAMPERED";
-
-        } catch (err) {
-          console.warn("⚠️ Document not found on blockchain");
-          docStatus = "NOT_STORED";
+        if (blockchainStatus !== "NOT_STORED") {
+          try {
+            const isValid = await blockchainService.verifyDocument(
+              milestone.id,
+              doc.hash
+            );
+            docStatus = isValid ? "VERIFIED" : "TAMPERED";
+          } catch (err) {
+            console.warn("⚠️ Document not found on blockchain");
+            docStatus = "NOT_STORED";
+          }
         }
 
         verifiedDocuments.push({
@@ -146,6 +150,12 @@ export const publicService = {
       });
     }
 
+    // Fetch complaints
+    const complaints = await prisma.complaint.findMany({
+      where: { projectId },
+      orderBy: { createdAt: "desc" },
+    });
+
     // =========================
     // 📤 FINAL RESPONSE
     // =========================
@@ -159,11 +169,39 @@ export const publicService = {
           city: project.locationCity,
           full: `${project.locationCity}, ${project.locationState}`,
         },
-        assignedBy: project.government.name,
-        assignedTo: project.contractorCppId,
+        assignedBy: project.government?.name || "N/A",
+        assignedTo: contractor?.cppUserId || "N/A",
+        contractorName: contractor?.name || "N/A",
         createdAt: project.createdAt,
       },
       milestones: result,
+      complaints: complaints.map(c => ({
+        id: c.id,
+        message: c.message,
+        submittedBy: c.submittedBy,
+        createdAt: c.createdAt
+      }))
     };
+  },
+
+  getAllProjects: async () => {
+    return await prisma.project.findMany({
+      include: {
+        government: {
+          select: { name: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
+  submitComplaint: async (data) => {
+    return await prisma.complaint.create({
+      data: {
+        projectId: data.projectId,
+        message: data.message,
+        submittedBy: data.submittedBy || "Citizen",
+      },
+    });
   },
 };

@@ -35,7 +35,7 @@ export const documentService = {
         fileUrl: file.path,
         hash: documentHash,
         type,
-        isPublic: isPublic || false,
+        isPublic: isPublic || true,
         milestoneId,
         uploadedBy,
         verification: VerificationStatus.PENDING,

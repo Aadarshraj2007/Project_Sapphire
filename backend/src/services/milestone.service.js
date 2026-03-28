@@ -2,13 +2,19 @@ import prisma from "../config/prisma.js";
 import { Messages } from "../constants/messages.js";
 import { generateId } from "../utils/generateId.js";
 import { paymentService } from "./payment.service.js";
-import { MilestoneStatus,SiteInspectionStatus,VerificationStatus } from "@prisma/client";
+import { MilestoneStatus,SiteInspectionStatus,VerificationStatus,ProjectStatus } from "@prisma/client";
 import { generateDocumentHash,generateMilestoneHash } from "../utils/hash.js";
 import { blockchainService } from "./blockchain.service.js";
 
 export const milestoneService = {
 
   createMilestone: async ({ projectId, title, description, amount, sequence }) => {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) throw new Error("Project not found");
+    if (project.status === ProjectStatus.COMPLETED) {
+      throw new Error("Cannot add milestones to a completed project");
+    }
+
     const existing = await prisma.milestone.findUnique({
       where: { projectId_sequence: { projectId, sequence } },
     });

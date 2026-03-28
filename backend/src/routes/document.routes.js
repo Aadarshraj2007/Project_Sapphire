@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
-import { roleMiddleware } from "../middlewares/role.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { documentController } from "../controllers/document.controller.js";
 import { UserRole } from "../constants/roles.js";
@@ -41,6 +40,13 @@ router.get(
   "/milestone/:milestoneId",
   authMiddleware([UserRole.CONTRACTOR, UserRole.GOVERNMENT]),
   documentController.getDocumentsByMilestone
+);
+
+// View single document (Any authenticated user)
+router.get(
+  "/view/:documentId",
+  authMiddleware([UserRole.CONTRACTOR, UserRole.GOVERNMENT]),
+  documentController.viewDocument
 );
 
 export default router;

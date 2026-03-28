@@ -89,7 +89,6 @@ export const documentController = {
     }
   },
 
-  // Get documents
   getDocumentsByMilestone: async (req, res, next) => {
     try {
       const { milestoneId } = req.params;
@@ -99,6 +98,18 @@ export const documentController = {
       );
 
       res.json({ documents: docs });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  viewDocument: async (req, res, next) => {
+    try {
+      const { documentId } = req.params;
+      const doc = await documentService.getDocumentById(documentId);
+      
+      // Send the file
+      res.sendFile(doc.fileUrl);
     } catch (err) {
       next(err);
     }

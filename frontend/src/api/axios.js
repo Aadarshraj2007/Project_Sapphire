@@ -1,15 +1,31 @@
-import axios from "axios";
+import axios from 'axios';
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: 'http://localhost:5000/api',
 });
 
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
+// Attach JWT token to every request
+API.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('token');
   if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return req;
+  return config;
 });
+
+// Handle 401 responses globally
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default API;

@@ -59,14 +59,22 @@ export const authController = {
   },
 
   // ---------------- Supreme Admin Approve ----------------
-  approveUser: async ({userId, approve }) => {
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { approved: approve },
-    });
-
-    logInfo(`User ${approve ? "approved" : "rejected"} by Supreme Admin: ${user.email}`);
-    return user;
+  approveUser: async (req, res) => {
+    try {
+      const { userId, approve } = req.body;
+      const user = await authService.approveUser({ userId, approve });
+      
+      res.json({
+        msg: `User ${approve ? "approved" : "rejected"} successfully`,
+        user: {
+          id: user.id,
+          email: user.email,
+          approved: user.approved
+        }
+      });
+    } catch (err) {
+      res.status(400).json({ msg: err.message });
+    }
   },
 
   // ---------------- Login ----------------

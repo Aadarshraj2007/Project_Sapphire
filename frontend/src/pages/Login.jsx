@@ -1,54 +1,102 @@
-import { useState, useContext } from "react";
-import API from "../api/axios";
-import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { LogIn, Mail, Lock, Shield } from 'lucide-react';
+import toast from 'react-hot-toast';
+import API from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const res = await API.post("/auth/login", form);
-      login(res.data);
+      const res = await API.post('/auth/login', { email, password });
+      const { token, user } = res.data;
+      login(user, token);
+      toast.success('Login successful!');
 
-      // redirect based on role
-      if (res.data.user.role === "SUPREME_ADMIN") {
-        navigate("/admin");
-      } else {
-        navigate("/dashboard");
-      }
+      const routes = {
+        SUPREME_ADMIN: '/admin',
+        GOVERNMENT: '/gov',
+        CONTRACTOR: '/contractor',
+      };
+      navigate(routes[user.role] || '/');
     } catch (err) {
-      alert(err.response?.data?.msg);
+      toast.error(err.response?.data?.msg || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="p-6 shadow rounded w-96">
-        <h2 className="text-xl mb-4">Login</h2>
+    <div className="auth-page">
+      <motion.div
+        className="auth-card"
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <div style={{
+            width: '48px', height: '48px', borderRadius: 'var(--radius-md)',
+            background: 'var(--gradient-primary)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Shield size={24} color="white" />
+          </div>
+        </div>
+        <h1>Welcome Back</h1>
+        <p className="subtitle">Sign in to your GovChain account</p>
 
-        <input
-          className="input"
-          placeholder="Email"
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <div style={{ position: 'relative' }}>
+              <Mail size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="email"
+                className="form-input"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                style={{ paddingLeft: '2.5rem' }}
+              />
+            </div>
+          </div>
 
-        <input
-          type="password"
-          className="input"
-          placeholder="Password"
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <div style={{ position: 'relative' }}>
+              <Lock size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{ paddingLeft: '2.5rem' }}
+              />
+            </div>
+          </div>
 
-        <button className="btn w-full">Login</button>
-      </form>
+          <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '0.5rem' }} disabled={loading}>
+            {loading ? <div className="spinner" style={{ width: '20px', height: '20px', borderWidth: '2px' }} /> : <><LogIn size={18} /> Sign In</>}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+          Don't have an account? <Link to="/signup" style={{ fontWeight: 600 }}>Sign Up</Link>
+        </div>
+      </motion.div>
     </div>
   );
 };
