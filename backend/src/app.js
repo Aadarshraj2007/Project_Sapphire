@@ -21,11 +21,7 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 const app = express();
 
 // Middlewares
-app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));

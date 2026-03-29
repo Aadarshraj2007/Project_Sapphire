@@ -5,8 +5,11 @@ CREATE TABLE `User` (
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
     `phone` VARCHAR(191) NULL,
-    `role` ENUM('GOVERNMENT', 'CONTRACTOR') NOT NULL,
+    `role` ENUM('GOVERNMENT', 'CONTRACTOR', 'SUPREME_ADMIN') NOT NULL,
     `cppUserId` VARCHAR(191) NULL,
+    `approved` BOOLEAN NOT NULL DEFAULT false,
+    `otp` VARCHAR(191) NULL,
+    `otpExpiry` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -79,8 +82,9 @@ CREATE TABLE `Document` (
     `isPublic` BOOLEAN NOT NULL DEFAULT false,
     `milestoneId` VARCHAR(191) NOT NULL,
     `uploadedBy` VARCHAR(191) NOT NULL,
-    `verification` ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    `verification` ENUM('PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
     `rejectionReason` VARCHAR(191) NULL,
+    `previousDocumentId` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 

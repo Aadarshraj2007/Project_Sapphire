@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `document` MODIFY `verification` ENUM('PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING';

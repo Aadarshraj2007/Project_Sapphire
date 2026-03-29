@@ -129,7 +129,7 @@ const AdminDashboard = () => {
             </div>
             <div className="stat-card">
               <div className="stat-icon warning"><Clock size={22} /></div>
-              <div className="stat-info"><h4>{stats.pending}</h4><p>Pending Apps</p></div>
+              <div className="stat-info"><h4>{stats.pending}</h4><p>Pending Users</p></div>
             </div>
             <div className="stat-card">
               <div className="stat-icon success"><Landmark size={22} /></div>
